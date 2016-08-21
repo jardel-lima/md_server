@@ -212,12 +212,11 @@ app.post('/get_med', function(req, res){
 });
 
 
-var server = app.listen(8081, function () {
-
-  var host = server.address().address;
-  var port = server.address().port;
-
-  console.log("Example app listening at http://%s:%s", host, port);
+// Start the server
+var server = app.listen(process.env.PORT || '8080', function () {
+  console.log('App listening on port %s', server.address().port);
+  console.log('Press Ctrl+C to quit.');
 });
+// [END app]
 
 
