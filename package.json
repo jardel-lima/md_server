@@ -11,7 +11,7 @@
   "scripts": {
     "start": "node server.js",
     "monitor": "nodemon server.js",
-    "deploy": "gcloud app deploy"
+    "deploy": "gcloud server deploy"
   },
   "dependencies": {
     "bcrypt": "^0.8.7",

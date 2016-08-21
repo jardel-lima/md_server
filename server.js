@@ -7,10 +7,10 @@ app.use(bodyParser());
 
 var mysql      = require('mysql');
 var connection = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'root',
-  password : 'user',
-  database: "medicamente"
+  host     : 'medicamente-bd.ctnwnrrpnlth.us-west-2.rds.amazonaws.com',
+  user     : 'Medicamente_BD',
+  password : 'sd_medicamente_2016',
+  database: "Medicamente"
 });
 
 var send_response = function(status, msg, res){
