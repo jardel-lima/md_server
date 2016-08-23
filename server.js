@@ -50,7 +50,7 @@ var get_med = function(email,password,qtd,res){
 
 var get_med_aux = function(paciente_cpf, qtd,res){
 	var consulta_id = null
-	connection.query("SELECT Prescricao.medicamento,  Prescricao.concentracao, Prescricao.dosagem_tipo,  Prescricao.turno_matutino, Prescricao.turno_vespertino,  Prescricao.turno_noturno,  Prescricao.periodo, Prescricao.periodo_tipo, Prescricao.duracao, Prescricao.duracao_tipo,  Prescricao.obs FROM Prescricao INNER JOIN Consulta ON Consulta.id=Prescricao.id_Consulta WHERE Consulta.Paciente_cpf='"+paciente_cpf+"'", function(err, rows, fields) {
+	connection.query("SELECT Prescricao.id , Prescricao.id_Consulta, Prescricao.medicamento,  Prescricao.concentracao, Prescricao.dosagem, Prescricao.dosagem_tipo,  Prescricao.turno_matutino, Prescricao.turno_vespertino,  Prescricao.turno_noturno,  Prescricao.periodo, Prescricao.periodo_tipo, Prescricao.duracao, Prescricao.duracao_tipo,  Prescricao.obs FROM Prescricao INNER JOIN Consulta ON Consulta.id=Prescricao.id_Consulta WHERE Consulta.Paciente_cpf='"+paciente_cpf+"'", function(err, rows, fields) {
 		if (err) {
 			var response = {status:true, data:err};
 			res.json(response);
