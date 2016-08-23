@@ -1,6 +1,13 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var bcrypt = require('bcrypt');
+var fs = require('fs');
+var http = require('http');
+var https = require('https');
+
+var privateKey  = fs.readFileSync('ssl/key.pem', 'utf8');
+var certificate = fs.readFileSync('ssl/cert.pem', 'utf8');
+var credentials = {key: privateKey, cert: certificate};
 
 var app = express();
 app.use(bodyParser());
@@ -18,6 +25,69 @@ var send_response = function(status, msg, res){
 	res.json(response);
 }
 
+var send_mensage = function( email,  password, id_consulta, msg, res){
+	var cpf = null;
+	connection.query("SELECT password, cpf FROM Paciente WHERE email='"+email+"'", function(err, rows, fields) {
+		if (err) 
+			throw err;
+		if(rows[0]){
+			console.log('The Paciente password is: ', rows[0].password);
+			password_saved = rows[0].password;
+			cpf = rows[0].cpf;
+			
+			if(password_saved){
+
+				if(bcrypt.compareSync(password, password_saved)){
+					console.log("User Validated");
+					send_mensage_aux(id_consulta, msg, res);
+				}
+				else
+					send_response(false,"Senha Incorreta",res);	
+			}
+			else
+				send_response(false,"Senha não definida",res);
+
+		}
+		else
+			send_response(false,"Email não cadastrado",res);
+	
+	});
+
+}
+
+
+var send_mensage_aux = function(id_consulta, msg, res){
+	var id_paciente = null;
+	var id_medico = null;
+	
+	connection.query("SELECT Paciente_cpf, Medico_cpf FROM `Consulta` WHERE id="+id_consulta,
+		function(err, rows, fields){
+			if (err) 
+				throw err;
+			if(rows[0]){
+				id_paciente = rows[0].Paciente_cpf;
+				id_medico = rows[0].Medico_cpf;
+				
+				console.log("Paciente Encontrado");
+				connection.query("UPDATE `Consulta` SET msg='"+msg+"' WHERE id = "+ id_consulta,
+					function(err, rows, fields){
+						if (err) 
+							throw err;
+						if(rows){
+							console.log("Mensagem Enviada");
+							send_response(true, "Mensagem Enviada",res);
+						}
+						else
+							send_response(false,"Mensagem não Enviada",res);
+					}
+				);
+			}
+			else
+				send_response(false,"Paciente Não Encontrado",res);
+		}
+	);
+
+}
 var get_med = function(email,password,qtd,res){
 	var cpf = null;
 	connection.query("SELECT password, cpf FROM Paciente WHERE email='"+email+"'", function(err, rows, fields) {
@@ -211,12 +281,38 @@ app.post('/get_med', function(req, res){
 	 	send_response(false,"Campos Vazios",res);
 });
 
+app.post('/send_msg', function(req, res){
+	 console.log(req.body);
+	 var email = req.body.email;
+	 var password = req.body.password;
+	 var id_consulta = req.body.id_consulta;
+	 var msg = req.body.msg;
+		 
+	 
+	 if((id_consulta && email && msg && password ){
+	 	console.log("send msg");
+	 	send_mensage(email,password,id_consulta, msg,res);
+	
+	 }else
+	 	send_response(false,"Campos Vazios",res);
+});
+
 
 // Start the server
-var server = app.listen(process.env.PORT || '8080', function () {
+/*var server = app.listen(process.env.PORT || '8080', function () {
   console.log('App listening on port %s', server.address().port);
   console.log('Press Ctrl+C to quit.');
-});
+});*/
+
+var httpServer = http.createServer(app);
+var httpsServer = https.createServer(credentials, app);
+
+httpServer.listen(8080);
+httpsServer.listen(8443,
+function () {
+  console.log('App listening on port %s', httpsServer.address().port);
+  console.log('Press Ctrl+C to quit.');}
+);
 // [END app]
 
 
